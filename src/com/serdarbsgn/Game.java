@@ -13,14 +13,13 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
     int mineCount = 75;
     boolean firstClick = true;
 
-
     private final Timer timer;
 
     public Game(int width, int height) {
         resolutionX = width;
         resolutionY = height;
         mouseCoordinates = new int[]{0, 0};
-        mineField = new int[26][14];
+        mineField = new int[28][16];
         setFocusable(true);
         addMouseMotionListener(this);
         addMouseListener(this);
@@ -42,9 +41,14 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
         for (int j = 2; j < 15; j++) {
             g.drawLine(resolutionX / 27 - 15, resolutionY * j / 15 - 16, resolutionX - 21, resolutionY * j / 15 - 16);
         }
-        for (int i = 0; i < 26; i++) {
-            for (int j = 0; j < 14; j++) {
+        for (int i = 1; i < 27; i++) {
+            for (int j = 1; j < 15; j++) {
                 if (mineField[i][j] != 10 && mineField[i][j] != 9) {
+                    if (mineField[i][j] > 50) {
+                        g.setColor(Color.RED);
+                        g.fillRect((resolutionX * i / 27)-10, (resolutionY * j / 15)-10, 20, 20);
+                        continue;
+                    }
                     if (mineField[i][j] == 0) {
                         g.setColor(Color.DARK_GRAY);
                     }
@@ -69,7 +73,7 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
                     if (mineField[i][j] == 7) {
                         g.setColor(Color.BLACK);
                     }
-                    g.drawString(mineField[i][j] + "", 35 + (resolutionX * i / 27), 40 + (resolutionY * j / 15));
+                    g.drawString(mineField[i][j] + "", (resolutionX * i / 27), (resolutionY * j / 15));
                 }
             }
         }
@@ -80,6 +84,8 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
     @Override
     public void actionPerformed(ActionEvent e) {
         timer.start();
+//        System.out.println(mouseCoordinates[0] + " " + mouseCoordinates[1]);
+//        System.out.println((mouseCoordinates[0]) / 35 + " " + (mouseCoordinates[1]) / 35);
         repaint();
     }
 
@@ -98,9 +104,9 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
         if (e.getButton() == 1) {
             mouseClicked = 1;
             if (firstClick) {
-                initializeMineField((mouseCoordinates[0] - 20) / 35, (mouseCoordinates[1] - 20) / 35);
+                initializeMineField((mouseCoordinates[0]) / 35, (mouseCoordinates[1]) / 35);
                 firstClick = false;
-            } else arrangeNumbers((mouseCoordinates[0] - 20) / 35, (mouseCoordinates[1] - 20) / 35);
+            } else arrangeNumbers((mouseCoordinates[0]) / 35, (mouseCoordinates[1]) / 35);
         }
         if (e.getButton() == 3) {
             mouseClicked = 3;
@@ -109,66 +115,59 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
     }
 
     private void flagSquare() {
-        mineField[(mouseCoordinates[0] - 20) / 35][(mouseCoordinates[1] - 20) / 35] = 99;
+        if (mineField[(mouseCoordinates[0]) / 35][(mouseCoordinates[1]) / 35] < 50) {
+            mineField[(mouseCoordinates[0]) / 35][(mouseCoordinates[1]) / 35] += 99;
+        } else {
+            mineField[(mouseCoordinates[0]) / 35][(mouseCoordinates[1]) / 35] -= 99;
+        }
     }
 
     private void initializeMineField(int x, int y) {
-        for (int i = 0; i < 26; i++) {
-            for (int j = 0; j < 14; j++) {
+        for (int i = 1; i < 27; i++) {
+            for (int j = 1; j < 15; j++) {
                 if (i == x && j == y) {
-                    if (x >= 1) {
-                        if (mineField[x - 1][y] == 9) {
-                            mineCount++;
-                        }
-                        mineField[x - 1][y] = 10;
 
-                        if (y >= 1) {
-                            if (mineField[x - 1][y - 1] == 9) {
-                                mineCount++;
-                            }
-
-                            mineField[x - 1][y - 1] = 10;
-                            if (mineField[x][y - 1] == 9) {
-                                mineCount++;
-                            }
-
-                            mineField[x][y - 1] = 10;
-                        }
-                        if (y <= 12) {
-                            if (mineField[x][y + 1] == 9) {
-                                mineCount++;
-                            }
-
-                            mineField[x][y + 1] = 10;
-                            if (mineField[x - 1][y + 1] == 9) {
-                                mineCount++;
-                            }
-
-                            mineField[x - 1][y + 1] = 10;
-                        }
+                    if (mineField[x - 1][y] == 9) {
+                        mineCount++;
                     }
-                    if (x <= 24) {
-                        if (mineField[x + 1][y] == 9) {
-                            mineCount++;
-                        }
+                    mineField[x - 1][y] = 10;
 
-                        mineField[x + 1][y] = 10;
-                        if (y >= 1) {
-                            if (mineField[x + 1][y - 1] == 9) {
-                                mineCount++;
-                            }
-
-                            mineField[x + 1][y - 1] = 10;
-                        }
-                        if (y <= 12) {
-                            if (mineField[x + 1][y + 1] == 9) {
-                                mineCount++;
-                            }
-
-                            mineField[x + 1][y + 1] = 10;
-                        }
+                    if (mineField[x - 1][y - 1] == 9) {
+                        mineCount++;
                     }
-                } else if ((i == x && j == y + 1) || (i == x + 1 && j == y - 1) || (i == x + 1 && j == y) || (i == x + 1 && j == y + 1)) {
+                    mineField[x - 1][y - 1] = 10;
+
+                    if (mineField[x][y - 1] == 9) {
+                        mineCount++;
+                    }
+                    mineField[x][y - 1] = 10;
+
+                    if (mineField[x][y + 1] == 9) {
+                        mineCount++;
+                    }
+                    mineField[x][y + 1] = 10;
+
+                    if (mineField[x - 1][y + 1] == 9) {
+                        mineCount++;
+                    }
+                    mineField[x - 1][y + 1] = 10;
+
+                    if (mineField[x + 1][y] == 9) {
+                        mineCount++;
+                    }
+                    mineField[x + 1][y] = 10;
+
+                    if (mineField[x + 1][y - 1] == 9) {
+                        mineCount++;
+                    }
+                    mineField[x + 1][y - 1] = 10;
+
+                    if (mineField[x + 1][y + 1] == 9) {
+                        mineCount++;
+                    }
+                    mineField[x + 1][y + 1] = 10;
+
+                } else if ((i == x && j == y + 1) || (i == x + 1 && (j == y - 1 || j == y || j == y + 1))) {  //|| (i == x + 1 && j == y) || (i == x + 1 && j == y + 1))
                     continue;
                 } else {
                     if (mineCount != 0) {
@@ -183,11 +182,12 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
                 }
             }
         }
-        arrangeNumbers((mouseCoordinates[0] - 20) / 35, (mouseCoordinates[1] - 20) / 35);
+        System.out.println(mineCount);
+        arrangeNumbers((mouseCoordinates[0]) / 35, (mouseCoordinates[1]) / 35);
     }
 
     private void arrangeNumbers(int x, int y) {
-        if (mineField[x][y] == 0) {
+        if (mineField[x][y] == 0||mineField[x][y]>50) {
             return;
         }
         int bombCount = -1;
@@ -195,66 +195,50 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
             System.out.println("Game Over");
         } else {
             bombCount = 0;
-            if (x >= 1) {
-                if (mineField[x - 1][y] == 9) {
-                    bombCount++;
-                }
-                if (y >= 1) {
-                    if (mineField[x - 1][y - 1] == 9) {
-                        bombCount++;
-                    }
-                    if (mineField[x][y - 1] == 9) {
-                        bombCount++;
-                    }
-                }
-                if (y <= 12) {
-                    if (mineField[x][y + 1] == 9) {
-                        bombCount++;
-                    }
-                    if (mineField[x - 1][y + 1] == 9) {
-                        bombCount++;
-                    }
-                }
+
+            if (mineField[x - 1][y] == 9 || mineField[x - 1][y] == 108) {
+                bombCount++;
             }
-            if (x <= 24) {
-                if (mineField[x + 1][y] == 9) {
-                    bombCount++;
-                }
-                if (y >= 1) {
-                    if (mineField[x + 1][y - 1] == 9) {
-                        bombCount++;
-                    }
-                }
-                if (y <= 12) {
-                    if (mineField[x + 1][y + 1] == 9) {
-                        bombCount++;
-                    }
-                }
+
+            if (mineField[x - 1][y - 1] == 9 || mineField[x - 1][y - 1] == 108) {
+                bombCount++;
+            }
+
+            if (mineField[x][y - 1] == 9 || mineField[x][y - 1] == 108) {
+                bombCount++;
+            }
+
+            if (mineField[x][y + 1] == 9 || mineField[x][y + 1] == 108) {
+                bombCount++;
+            }
+
+            if (mineField[x - 1][y + 1] == 9 || mineField[x - 1][y + 1] == 108) {
+                bombCount++;
+            }
+
+            if (mineField[x + 1][y] == 9 || mineField[x + 1][y] == 108) {
+                bombCount++;
+            }
+
+            if (mineField[x + 1][y - 1] == 9 || mineField[x + 1][y - 1] == 108) {
+                bombCount++;
+            }
+
+            if (mineField[x + 1][y + 1] == 9 || mineField[x + 1][y + 1] == 108) {
+                bombCount++;
             }
         }
         if (bombCount == 0) {
             mineField[x][y] = 0;
-            if (x >= 1) {
-                arrangeNumbers(x - 1, y);
+            arrangeNumbers(x - 1, y);
+            arrangeNumbers(x - 1, y - 1);
+            arrangeNumbers(x, y - 1);
+            arrangeNumbers(x - 1, y + 1);
+            arrangeNumbers(x, y + 1);
+            arrangeNumbers(x + 1, y);
+            arrangeNumbers(x + 1, y - 1);
+            arrangeNumbers(x + 1, y + 1);
 
-                if (y >= 1) {
-                    arrangeNumbers(x - 1, y - 1);
-                    arrangeNumbers(x, y - 1);
-                }
-                if (y <= 12) {
-                    arrangeNumbers(x, y + 1);
-                    arrangeNumbers(x - 1, y + 1);
-                }
-            }
-            if (x <= 24) {
-                arrangeNumbers(x + 1, y);
-                if (y >= 1) {
-                    arrangeNumbers(x + 1, y - 1);
-                }
-                if (y <= 12) {
-                    arrangeNumbers(x + 1, y + 1);
-                }
-            }
         } else mineField[x][y] = bombCount;
     }
 

@@ -28,6 +28,52 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
         timer.start();
     }
 
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (e.getButton() == 1) {
+            mouseClicked = 1;
+        }
+        if (e.getButton() == 2) {
+            mouseClicked = 2;
+        }
+        if (e.getButton() == 3) {
+            mouseClicked = 3;
+        }
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        mouseCoordinates[0] = e.getX();
+        mouseCoordinates[1] = e.getY();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        timer.start();
+        int x = mouseCoordinates[0] / 35;
+        int y = mouseCoordinates[1] / 35;
+
+        if (mouseClicked == 1) {
+            if (x == 0 || x == 27 || y == 0 || y == 15) {
+            } else {
+                if (firstClick) {
+                    initializeMineField(x, y);
+                    firstClick = false;
+                } else arrangeNumbers(x, y);
+            }
+            mouseClicked = -1;
+        }
+        if (mouseClicked == 2) {
+            mineCount = 75;
+            initializeMineField(x, y);
+            mouseClicked = -1;
+        }
+        if (mouseClicked == 3) {
+            flagSquare(x, y);
+            mouseClicked = -1;
+        }
+        repaint();
+    }
+
     public void paint(Graphics g) {
         requestFocus(true);
         g.setColor(Color.DARK_GRAY);
@@ -46,7 +92,7 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
                 if (mineField[i][j] != 10 && mineField[i][j] != 9) {
                     if (mineField[i][j] > 50) {
                         g.setColor(Color.RED);
-                        g.fillRect((resolutionX * i / 27)-10, (resolutionY * j / 15)-10, 20, 20);
+                        g.fillRect((resolutionX * i / 27) - 10, (resolutionY * j / 15) - 10, 20, 20);
                         continue;
                     }
                     if (mineField[i][j] == 0) {
@@ -80,45 +126,11 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
 
     }
 
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        timer.start();
-//        System.out.println(mouseCoordinates[0] + " " + mouseCoordinates[1]);
-//        System.out.println((mouseCoordinates[0]) / 35 + " " + (mouseCoordinates[1]) / 35);
-        repaint();
-    }
-
-
-    public void mouseMoved(MouseEvent e) {
-        mouseCoordinates[0] = e.getX();
-        mouseCoordinates[1] = e.getY();
-    }
-
-    public void mouseDragged(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        if (e.getButton() == 1) {
-            mouseClicked = 1;
-            if (firstClick) {
-                initializeMineField((mouseCoordinates[0]) / 35, (mouseCoordinates[1]) / 35);
-                firstClick = false;
-            } else arrangeNumbers((mouseCoordinates[0]) / 35, (mouseCoordinates[1]) / 35);
-        }
-        if (e.getButton() == 3) {
-            mouseClicked = 3;
-            flagSquare();
-        }
-    }
-
-    private void flagSquare() {
-        if (mineField[(mouseCoordinates[0]) / 35][(mouseCoordinates[1]) / 35] < 50) {
-            mineField[(mouseCoordinates[0]) / 35][(mouseCoordinates[1]) / 35] += 99;
+    private void flagSquare(int x, int y) {
+        if (mineField[x][y] < 50) {
+            mineField[x][y] += 99;
         } else {
-            mineField[(mouseCoordinates[0]) / 35][(mouseCoordinates[1]) / 35] -= 99;
+            mineField[x][y] -= 99;
         }
     }
 
@@ -126,6 +138,7 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
         for (int i = 1; i < 27; i++) {
             for (int j = 1; j < 15; j++) {
                 if (i == x && j == y) {
+                    mineField[x][y] = 10;
 
                     if (mineField[x - 1][y] == 9) {
                         mineCount++;
@@ -167,7 +180,7 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
                     }
                     mineField[x + 1][y + 1] = 10;
 
-                } else if ((i == x && j == y + 1) || (i == x + 1 && (j == y - 1 || j == y || j == y + 1))) {  //|| (i == x + 1 && j == y) || (i == x + 1 && j == y + 1))
+                } else if ((i == x && j == y + 1) || (i == x + 1 && (j == y - 1 || j == y || j == y + 1))) {
                     continue;
                 } else {
                     if (mineCount != 0) {
@@ -182,12 +195,20 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
                 }
             }
         }
-        System.out.println(mineCount);
-        arrangeNumbers((mouseCoordinates[0]) / 35, (mouseCoordinates[1]) / 35);
+        for (int i = 0; i < 28; i++) {
+            if (i < 16) {
+                mineField[0][i] = 0;
+                mineField[27][i] = 0;
+            }
+            mineField[i][0] = 0;
+            mineField[i][15] = 0;
+        }
+        System.out.println("Mines That Couldn't Placed : " + mineCount);
+        arrangeNumbers(x, y);
     }
 
     private void arrangeNumbers(int x, int y) {
-        if (mineField[x][y] == 0||mineField[x][y]>50) {
+        if (mineField[x][y] == 0 || mineField[x][y] > 50) {
             return;
         }
         int bombCount = -1;
@@ -240,6 +261,11 @@ public class Game extends JPanel implements ActionListener, MouseMotionListener,
             arrangeNumbers(x + 1, y + 1);
 
         } else mineField[x][y] = bombCount;
+    }
+
+
+    public void mouseDragged(MouseEvent e) {
+
     }
 
     @Override
